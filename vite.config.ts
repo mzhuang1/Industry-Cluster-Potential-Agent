@@ -1,42 +1,53 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    tailwindcss()
+  ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './')
+      "@": path.resolve(__dirname, "./"),
     },
   },
   server: {
     port: 3000,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8021',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
-      }
-    }
+    host: '0.0.0.0', // Allow connections from any host
+    strictPort: false,
+    allowedHosts: 'all', // This fixes the Replit host blocking issue
+    hmr: {
+      clientPort: 443, // Use HTTPS port for HMR in cloud environments
+    },
+  },
+  preview: {
+    port: 4173,
+    host: '0.0.0.0',
+    strictPort: false,
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    assetsDir: 'assets',
+    sourcemap: false,
+    minify: 'terser',
     rollupOptions: {
       output: {
         manualChunks: {
-          react: ['react', 'react-dom'],
+          vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
-          ui: [
-            'sonner',
-            'lucide-react',
-            'class-variance-authority',
-            'clsx',
-            'tailwind-merge'
-          ]
-        }
-      }
-    }
-  }
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+        },
+      },
+    },
+  },
+  define: {
+    // Fix for some packages that expect process.env
+    'process.env': {},
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom'],
+  },
 })
