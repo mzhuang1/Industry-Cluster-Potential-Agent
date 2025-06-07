@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>产业集群发展潜力评估系统</title>
+  <meta name="description" content="一个智能产业集群发展潜力评估系统，结合ChatGPT/Claude模型API、RAG检索和数据可视化功能。">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <!-- Preload fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/main.tsx"></script>
+  
+  <!-- Error handler for fetch API failures -->
+  <script>
+    // Global error handler to catch unhandled promise rejections
+    window.addEventListener('unhandledrejection', function(event) {
+      console.error('Unhandled promise rejection:', event.reason);
+      
+      // If it's a fetch error, we can handle it gracefully
+      if (event.reason instanceof TypeError && event.reason.message.includes('fetch')) {
+        console.warn('Network request failed, application will use mock data');
+      }
+    });
+  </script>
+</body>
+</html>

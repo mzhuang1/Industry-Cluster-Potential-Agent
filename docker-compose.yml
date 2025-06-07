@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # 应用服务（包含前端和后端）
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8021:8021"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/cluster_assessment
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+      - CORS_ORIGINS=*
+    depends_on:
+      - db
+      - vector_db
+    restart: always
+    volumes:
+      - uploaded_files:/app/backend/uploads
+      - logs:/app/backend/logs
+
+  # PostgreSQL数据库服务
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=cluster_assessment
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    restart: always
+
+  # 向量数据库服务
+  vector_db:
+    image: pgvector/pgvector:pg15
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=vector_store
+    volumes:
+      - vector_data:/var/lib/postgresql/data
+      - ./backend/db/init_vector.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5433:5432"
+    restart: always
+
+  # Nginx代理服务
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      - app
+    restart: always
+
+volumes:
+  postgres_data:
+  vector_data:
+  uploaded_files:
+  logs:
